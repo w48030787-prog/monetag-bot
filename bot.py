@@ -18,7 +18,7 @@ flask_app = Flask(__name__)
 
 @flask_app.route("/")
 def home():
-    return "البوت شغّال ✅"
+    return "✅"
 
 @flask_app.route("/v1/<int:user_id>")
 def visit1(user_id):
@@ -50,8 +50,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🌟 *أهلاً بك في مسابقة النجوم!*\n\n"
         "للمشاركة اتبع الخطوات:\n\n"
-        "1️⃣ اضغط *الرابط الأول* وانتظر\n"
-        "2️⃣ اضغط *الرابط الثاني* وانتظر\n"
+        "1️⃣ اضغط *الرابط الأول* وانتظر *10 ثواني* ⏱\n"
+        "2️⃣ اضغط *الرابط الثاني* وانتظر *10 ثواني* ⏱\n"
         "3️⃣ اضغط *تحقق* ✅\n\n"
         "بالتوفيق! 🍀",
         parse_mode="Markdown",
@@ -65,11 +65,32 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     v = visited.get(user_id, [False, False])
 
     if not v[0] and not v[1]:
-        await query.answer("❌ ما دخلت أي رابط بعد!", show_alert=True)
+        await query.edit_message_text(
+            "🌟 *أهلاً بك في مسابقة النجوم!*\n\n"
+            "للمشاركة اتبع الخطوات:\n\n"
+            "1️⃣ اضغط *الرابط الأول* وانتظر *10 ثواني* ⏱\n"
+            "2️⃣ اضغط *الرابط الثاني* وانتظر *10 ثواني* ⏱\n"
+            "3️⃣ اضغط *تحقق* ✅\n\n"
+            "بالتوفيق! 🍀",
+            parse_mode="Markdown",
+            reply_markup=get_keyboard(user_id)
+        )
     elif not v[0]:
-        await query.answer("❌ باقي الرابط الأول!", show_alert=True)
+        await query.edit_message_text(
+            "⚠️ *باقي الرابط الأول!*\n\n"
+            "اضغط عليه وانتظر *10 ثواني* ⏱\n"
+            "ثم ارجع واضغط تحقق ✅",
+            parse_mode="Markdown",
+            reply_markup=get_keyboard(user_id)
+        )
     elif not v[1]:
-        await query.answer("❌ باقي الرابط الثاني!", show_alert=True)
+        await query.edit_message_text(
+            "⚠️ *باقي الرابط الثاني!*\n\n"
+            "اضغط عليه وانتظر *10 ثواني* ⏱\n"
+            "ثم ارجع واضغط تحقق ✅",
+            parse_mode="Markdown",
+            reply_markup=get_keyboard(user_id)
+        )
     else:
         await query.edit_message_text(
             "🎊 *تم تسجيلك بنجاح!*\n\n"
