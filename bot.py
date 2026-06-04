@@ -11,7 +11,8 @@ ADMIN_ID = 8030787672
 
 LINKS = [
     "https://omg10.com/4/11088712",
-    "https://omg10.com/4/11088713"
+    "https://omg10.com/4/11088713",
+    "https://omg10.com/4/11099320"
 ]
 
 visited = {}
@@ -24,36 +25,46 @@ def home():
 @flask_app.route("/v1/<int:user_id>")
 def visit1(user_id):
     if user_id not in visited:
-        visited[user_id] = [False, False]
+        visited[user_id] = [False, False, False]
     visited[user_id][0] = True
     return redirect(LINKS[0])
 
 @flask_app.route("/v2/<int:user_id>")
 def visit2(user_id):
     if user_id not in visited:
-        visited[user_id] = [False, False]
+        visited[user_id] = [False, False, False]
     visited[user_id][1] = True
     return redirect(LINKS[1])
 
+@flask_app.route("/v3/<int:user_id>")
+def visit3(user_id):
+    if user_id not in visited:
+        visited[user_id] = [False, False, False]
+    visited[user_id][2] = True
+    return redirect(LINKS[2])
+
 def get_keyboard(user_id):
-    v = visited.get(user_id, [False, False])
+    v = visited.get(user_id, [False, False, False])
     keyboard = []
     if not v[0]:
         keyboard.append([InlineKeyboardButton("🔗 الرابط الأول", url=f"{BASE_URL}/v1/{user_id}")])
     if not v[1]:
         keyboard.append([InlineKeyboardButton("🔗 الرابط الثاني", url=f"{BASE_URL}/v2/{user_id}")])
+    if not v[2]:
+        keyboard.append([InlineKeyboardButton("🔗 الرابط الثالث", url=f"{BASE_URL}/v3/{user_id}")])
     keyboard.append([InlineKeyboardButton("🎯 تحقق من مشاركتي", callback_data="final")])
     return InlineKeyboardMarkup(keyboard)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    visited[user_id] = [False, False]
+    visited[user_id] = [False, False, False]
     await update.message.reply_text(
         "🌟 *أهلاً بك في مسابقة النجوم!*\n\n"
         "للمشاركة اتبع الخطوات:\n\n"
         "1️⃣ اضغط *الرابط الأول* وانتظر *10 ثواني* ⏱\n"
         "2️⃣ اضغط *الرابط الثاني* وانتظر *10 ثواني* ⏱\n"
-        "3️⃣ اضغط *تحقق* ✅\n\n"
+        "3️⃣ اضغط *الرابط الثالث* وانتظر *10 ثواني* ⏱\n"
+        "4️⃣ اضغط *تحقق* ✅\n\n"
         "بالتوفيق! 🍀",
         parse_mode="Markdown",
         reply_markup=get_keyboard(user_id)
@@ -85,37 +96,22 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         visited.clear()
         await query.edit_message_text(
             "✅ *تم مسح كل البيانات!*\n\n"
-            "المسابقة الجديدة جاهزة 🎉\n"
-            "الكل لازم يدخل الروابط من جديد",
+            "المسابقة الجديدة جاهزة 🎉",
             parse_mode="Markdown"
         )
         return
 
-    v = visited.get(user_id, [False, False])
-    if not v[0] and not v[1]:
+    v = visited.get(user_id, [False, False, False])
+    remaining = []
+    if not v[0]: remaining.append("الرابط الأول")
+    if not v[1]: remaining.append("الرابط الثاني")
+    if not v[2]: remaining.append("الرابط الثالث")
+
+    if remaining:
         await query.edit_message_text(
-            "🌟 *أهلاً بك في مسابقة النجوم!*\n\n"
-            "للمشاركة اتبع الخطوات:\n\n"
-            "1️⃣ اضغط *الرابط الأول* وانتظر *10 ثواني* ⏱\n"
-            "2️⃣ اضغط *الرابط الثاني* وانتظر *10 ثواني* ⏱\n"
-            "3️⃣ اضغط *تحقق* ✅\n\n"
-            "بالتوفيق! 🍀",
-            parse_mode="Markdown",
-            reply_markup=get_keyboard(user_id)
-        )
-    elif not v[0]:
-        await query.edit_message_text(
-            "⚠️ *باقي الرابط الأول!*\n\n"
-            "اضغط عليه وانتظر *10 ثواني* ⏱\n"
-            "ثم ارجع واضغط تحقق ✅",
-            parse_mode="Markdown",
-            reply_markup=get_keyboard(user_id)
-        )
-    elif not v[1]:
-        await query.edit_message_text(
-            "⚠️ *باقي الرابط الثاني!*\n\n"
-            "اضغط عليه وانتظر *10 ثواني* ⏱\n"
-            "ثم ارجع واضغط تحقق ✅",
+            "⚠️ *باقي عليك:*\n\n" +
+            "\n".join([f"🔗 {r}" for r in remaining]) +
+            "\n\nادخل الروابط الباقية وانتظر *10 ثواني* ⏱\nثم اضغط تحقق ✅",
             parse_mode="Markdown",
             reply_markup=get_keyboard(user_id)
         )
